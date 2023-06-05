@@ -2,6 +2,7 @@ const express = require("express");
 const bodyparser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
+const encrypt = require("mongoose-encryption")
 
 const app=express();
 
@@ -12,10 +13,14 @@ app.use(bodyparser.urlencoded({extended:true}));
 mongoose.set('bufferCommands', false);
 mongoose.connect("mongodb://127.0.0.1:27017/userDB");
 
-const userSchema = {
+const userSchema = new mongoose.Schema( {
     email : String,
     password : String,
-};
+});
+
+const secret = "enckey";
+
+userSchema.plugin(encrypt,{secret:secret , encryptedFields:["password"]});
 
 const User = new mongoose.model("User",userSchema);
 
@@ -54,7 +59,7 @@ app.post("/login",function(req,res){
             else res.send("Invalid Password");
         }
         else res.send("Username doesnot exist, please register");
-        
+
         
     }).catch((err)=>{
         console.log(err);
